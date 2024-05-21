@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 from take2 import rag_test
+import pandas as pd
 
 load_dotenv()
 api_key = os.environ["MISTRAL"]
@@ -17,7 +18,7 @@ model = st.selectbox(
         "mistral-large-latest"
     )
 )
-uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=False)
+uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=False, type=["csv","xlsx"])
 
 def response(prompt,model):
     messages = [
@@ -44,8 +45,11 @@ if prompt := st.chat_input("Enter the prompt"):
 
     with st.chat_message("assistant"):
         if uploaded_files is not None:
+            df = pd.read_csv(uploaded_files)
+            new_file  = "data.csv"
+            df.to_csv(new_file,index=False)
             current_path = os.getcwd()
-            file_path = os.path.join(current_path, uploaded_files.name)
+            file_path = os.path.join(current_path, new_file)
             response = st.write(rag_test(file_path,prompt))
         else:
             response = st.write(response(prompt,model))
